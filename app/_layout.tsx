@@ -21,36 +21,21 @@ export const unstable_settings = {
 	initialRouteName: "(tabs)", // Start with the tab navigator
 };
 
+
+import AuthGate from '../components/AuthGate';
+
 function InnerLayout() {
-	const { token, user, isLoading } = useAuth();
-	const segments = useSegments();
-	const router = useRouter();
-
-	useEffect(() => {
-		if (isLoading) return;
-
-		const inAuthGroup = segments[0] === "(auth)";
-
-		if (token && user && inAuthGroup) {
-			router.replace("/(tabs)/"); // Redirect to home tab
-		} else if ((!token || !user) && !inAuthGroup) {
-			router.replace("/(auth)/login");
-		}
-	}, [token, user, isLoading, segments, router]);
-
-	if (isLoading) {
-		return <LoadingOverlay visible={true} text="Initializing..." />;
-	}
-
-	return (
-		<Stack screenOptions={{ headerShown: false }}>
-			<Stack.Screen name="(tabs)" />
-			<Stack.Screen name="(auth)" />
-			<Stack.Screen name="+not-found" />
-			{/* Example of a global modal, if you need one */}
-			{/* <Stack.Screen name="some-modal" options={{ presentation: 'modal', title: 'My Modal' }} /> */}
-		</Stack>
-	);
+  return (
+    <AuthGate>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="+not-found" />
+        {/* Example of a global modal, if you need one */}
+        {/* <Stack.Screen name="some-modal" options={{ presentation: 'modal', title: 'My Modal' }} /> */}
+      </Stack>
+    </AuthGate>
+  );
 }
 
 export default function RootLayout() {

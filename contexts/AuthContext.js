@@ -37,7 +37,9 @@ export const AuthProvider = ({ children }) => {
       emailOrPhone,
       password,
     });
-    const { token: newToken, ...userData } = response.data;
+    // Support both { token, user } and { token, ...userFields }
+    const { token: newToken, user: userObj, ...rest } = response.data;
+    const userData = userObj || rest;
     setToken(newToken);
     setUser(userData);
     await storeToken(newToken);
@@ -51,7 +53,9 @@ export const AuthProvider = ({ children }) => {
       `${API_BASE_URL}/auth/register`,
       userData,
     );
-    const { token: newToken, ...newUserData } = response.data;
+    // Support both { token, user } and { token, ...userFields }
+    const { token: newToken, user: userObj, ...rest } = response.data;
+    const newUserData = userObj || rest;
     setToken(newToken);
     setUser(newUserData);
     await storeToken(newToken);

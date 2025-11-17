@@ -23,7 +23,7 @@ const LoginScreen = () => {
     setLoading(true);
     try {
       await login(emailOrPhone, password);
-      // Navigation to AppNavigator happens automatically via RootLayout effect
+      router.replace('/(tabs)');
     } catch (error) {
       Alert.alert("Login Failed", getErrorMessage(error));
     } finally {
