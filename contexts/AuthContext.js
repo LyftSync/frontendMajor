@@ -1,14 +1,14 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
+import axios from "axios";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { API_BASE_URL } from "../constants/api";
 import {
   getToken,
   getUser,
-  storeToken,
-  storeUser,
   removeToken,
   removeUser,
+  storeToken,
+  storeUser,
 } from "../utils/storage";
-import axios from "axios";
-import { API_BASE_URL } from "../constants/api";
 
 export const AuthContext = createContext();
 
@@ -24,8 +24,9 @@ export const AuthProvider = ({ children }) => {
       if (storedToken && storedUser) {
         setToken(storedToken);
         setUser(storedUser);
-        axios.defaults.headers.common["Authorization"] =
-          `Bearer ${storedToken}`;
+        axios.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${storedToken}`;
       }
       setIsLoading(false);
     };
@@ -51,7 +52,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     const response = await axios.post(
       `${API_BASE_URL}/auth/register`,
-      userData,
+      userData
     );
     // Support both { token, user } and { token, ...userFields }
     const { token: newToken, user: userObj, ...rest } = response.data;

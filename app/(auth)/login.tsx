@@ -1,11 +1,17 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, Alert, ScrollView, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
-import { useAuth } from "../../contexts/AuthContext"; // Adjusted path
-import AppTextInput from "../../components/UI/AppTextInput"; // Adjusted path
+import React, { useState } from "react";
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+} from "react-native";
 import AppButton from "../../components/UI/AppButton"; // Adjusted path
+import AppTextInput from "../../components/UI/AppTextInput"; // Adjusted path
 import LoadingOverlay from "../../components/UI/LoadingOverlay"; // Adjusted path
 import { COLORS } from "../../constants/colors"; // Adjusted path
+import { useAuth } from "../../contexts/AuthContext"; // Adjusted path
 import { getErrorMessage } from "../../utils/helpers"; // Adjusted path
 
 const LoginScreen = () => {
@@ -23,7 +29,7 @@ const LoginScreen = () => {
     setLoading(true);
     try {
       await login(emailOrPhone, password);
-      router.replace('/(tabs)');
+      router.replace("/(tabs)");
     } catch (error) {
       Alert.alert("Login Failed", getErrorMessage(error));
     } finally {

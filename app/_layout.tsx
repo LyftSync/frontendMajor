@@ -1,16 +1,11 @@
-import {
-	DarkTheme,
-	DefaultTheme,
-	ThemeProvider,
-} from "@react-navigation/native";
+import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
 // import 'react-native-reanimated';
 
-import { AuthProvider, useAuth } from "../contexts/AuthContext";
-import LoadingOverlay from "../components/UI/LoadingOverlay";
+import { AuthProvider } from "../contexts/AuthContext";
 // Assuming SpaceMono is still used by some template files if you keep them.
 // If not, you can remove this font loading or replace with your own.
 // import { useColorScheme } from '@/hooks/useColorScheme'; // From template, remove if not used.
@@ -18,11 +13,10 @@ import LoadingOverlay from "../components/UI/LoadingOverlay";
 export { ErrorBoundary } from "expo-router"; // Recommended for error handling
 
 export const unstable_settings = {
-	initialRouteName: "(tabs)", // Start with the tab navigator
+  initialRouteName: "(tabs)", // Start with the tab navigator
 };
 
-
-import AuthGate from '../components/AuthGate';
+import AuthGate from "../components/AuthGate";
 
 function InnerLayout() {
   return (
@@ -39,29 +33,29 @@ function InnerLayout() {
 }
 
 export default function RootLayout() {
-	// const colorScheme = useColorScheme(); // From template, remove if not directly used for ThemeProvider
-	const [loaded, error] = useFonts({
-		SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"), // Keep or remove based on usage
-		// Add any custom fonts your app uses here
-	});
+  // const colorScheme = useColorScheme(); // From template, remove if not directly used for ThemeProvider
+  const [loaded, error] = useFonts({
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"), // Keep or remove based on usage
+    // Add any custom fonts your app uses here
+  });
 
-	useEffect(() => {
-		if (error) throw error;
-	}, [error]);
+  useEffect(() => {
+    if (error) throw error;
+  }, [error]);
 
-	if (!loaded && !error) {
-		return null; // Or a custom splash screen component
-	}
+  if (!loaded && !error) {
+    return null; // Or a custom splash screen component
+  }
 
-	// Using DefaultTheme, customize if needed or integrate your COLORS constant
-	const currentTheme = DefaultTheme; // Replace with DarkTheme based on colorScheme if you implement it
+  // Using DefaultTheme, customize if needed or integrate your COLORS constant
+  const currentTheme = DefaultTheme; // Replace with DarkTheme based on colorScheme if you implement it
 
-	return (
-		<AuthProvider>
-			<ThemeProvider value={currentTheme}>
-				<InnerLayout />
-				<StatusBar style="auto" />
-			</ThemeProvider>
-		</AuthProvider>
-	);
+  return (
+    <AuthProvider>
+      <ThemeProvider value={currentTheme}>
+        <InnerLayout />
+        <StatusBar style="auto" />
+      </ThemeProvider>
+    </AuthProvider>
+  );
 }
