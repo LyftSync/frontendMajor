@@ -52,6 +52,12 @@ const SearchRidesScreen = () => {
     address: string;
   } | null>(null);
 
+  const [toLocation, setToLocation] = useState<{
+    latitude: number;
+    longitude: number;
+    address: string;
+  } | null>(null);
+
   // Kept for direct input/display, but map picker will be primary
   const [fromLatText, setFromLatText] = useState("");
   const [fromLngText, setFromLngText] = useState("");
@@ -64,6 +70,8 @@ const SearchRidesScreen = () => {
 
   const [isMapModalVisible, setIsMapModalVisible] = useState(false);
   const [mapInitialRegion, setMapInitialRegion] = useState(DEFAULT_MAP_REGION);
+  const [isToMapModalVisible, setIsToMapModalVisible] = useState(false);
+  const [toMapInitialRegion, setToMapInitialRegion] = useState(DEFAULT_MAP_REGION);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const handleDateConfirm = (params: { date: Date }) => {
@@ -108,7 +116,11 @@ const SearchRidesScreen = () => {
           // For now, it will search without fromLat/fromLng if manual inputs are invalid & no map selection
         }
       }
-      // else, search will proceed without fromLat/fromLng if neither map nor valid manual input is provided
+
+      if (toLocation) {
+        params.toLat = toLocation.latitude;
+        params.toLng = toLocation.longitude;
+      }
 
       if (departureAfter) {
         const departureDateTime = new Date(departureAfter);
@@ -162,6 +174,40 @@ const SearchRidesScreen = () => {
     setIsMapModalVisible(true);
   };
 
+  const openMapPickerForToLocation = () => {
+    if (toLocation) {
+      setToMapInitialRegion({
+        latitude: toLocation.latitude,
+        longitude: toLocation.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      });
+    } else {
+      setToMapInitialRegion(DEFAULT_MAP_REGION);
+    }
+    setIsToMapModalVisible(true);
+  };
+
+  const openFromMapPicker = () => {
+    setMapInitialRegion(fromLocation ? {
+      latitude: fromLocation.latitude,
+      longitude: fromLocation.longitude,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
+    } : DEFAULT_MAP_REGION);
+    setIsMapModalVisible(true);
+  };
+
+  const openToMapPicker = () => {
+    setToMapInitialRegion(toLocation ? {
+      latitude: toLocation.latitude,
+      longitude: toLocation.longitude,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
+    } : DEFAULT_MAP_REGION);
+    setIsToMapModalVisible(true);
+  };
+
   const handleLocationSelected = (location: {
     latitude: number;
     longitude: number;
@@ -171,6 +217,24 @@ const SearchRidesScreen = () => {
     setIsMapModalVisible(false);
     // Optionally trigger search immediately after location selection
     // handleSearch();
+  };
+
+  const handleToLocationSelected = (location: {
+    latitude: number;
+    longitude: number;
+    address: string;
+  }) => {
+    setToLocation(location);
+    setIsToMapModalVisible(false);
+  };
+
+  const handleFromLocationSelected = (location: {
+    latitude: number;
+    longitude: number;
+    address: string;
+  }) => {
+    setFromLocation(location);
+    setIsMapModalVisible(false);
   };
 
   return (
@@ -192,6 +256,21 @@ const SearchRidesScreen = () => {
               {fromLocation
                 ? `From: ${fromLocation.address}`
                 : "Select Start Location on Map"}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.locationPickerButton}
+            onPress={openMapPickerForToLocation}
+          >
+            <Text
+              style={styles.locationPickerText}
+              numberOfLines={2}
+              ellipsizeMode="tail"
+            >
+              {toLocation
+                ? `To: ${toLocation.address}`
+                : "Select Destination on Map"}
             </Text>
           </TouchableOpacity>
 
@@ -285,6 +364,13 @@ const SearchRidesScreen = () => {
         onClose={() => setIsMapModalVisible(false)}
         onLocationSelect={handleLocationSelected}
         initialRegion={mapInitialRegion}
+      />
+
+      <MapPickerModal
+        isVisible={isToMapModalVisible}
+        onClose={() => setIsToMapModalVisible(false)}
+        onLocationSelect={handleToLocationSelected}
+        initialRegion={toMapInitialRegion}
       />
     </>
   );
