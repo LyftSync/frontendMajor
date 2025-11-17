@@ -71,7 +71,8 @@ const SearchRidesScreen = () => {
   const [isMapModalVisible, setIsMapModalVisible] = useState(false);
   const [mapInitialRegion, setMapInitialRegion] = useState(DEFAULT_MAP_REGION);
   const [isToMapModalVisible, setIsToMapModalVisible] = useState(false);
-  const [toMapInitialRegion, setToMapInitialRegion] = useState(DEFAULT_MAP_REGION);
+  const [toMapInitialRegion, setToMapInitialRegion] =
+    useState(DEFAULT_MAP_REGION);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const handleDateConfirm = (params: { date: Date }) => {
@@ -189,22 +190,30 @@ const SearchRidesScreen = () => {
   };
 
   const openFromMapPicker = () => {
-    setMapInitialRegion(fromLocation ? {
-      latitude: fromLocation.latitude,
-      longitude: fromLocation.longitude,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
-    } : DEFAULT_MAP_REGION);
+    setMapInitialRegion(
+      fromLocation
+        ? {
+            latitude: fromLocation.latitude,
+            longitude: fromLocation.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          }
+        : DEFAULT_MAP_REGION
+    );
     setIsMapModalVisible(true);
   };
 
   const openToMapPicker = () => {
-    setToMapInitialRegion(toLocation ? {
-      latitude: toLocation.latitude,
-      longitude: toLocation.longitude,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
-    } : DEFAULT_MAP_REGION);
+    setToMapInitialRegion(
+      toLocation
+        ? {
+            latitude: toLocation.latitude,
+            longitude: toLocation.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          }
+        : DEFAULT_MAP_REGION
+    );
     setIsToMapModalVisible(true);
   };
 
