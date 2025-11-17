@@ -1,4 +1,6 @@
-// IMPORTANT: If testing on a physical device, replace 'localhost'
-// with your computer's IP address on the local network.
-// For Android emulator, 'http://10.0.2.2:5000/api' might be needed if backend is on the same machine.
-export const API_BASE_URL = "http://192.168.1.28:5000/api";
+import Constants from "expo-constants";
+
+// export const API_BASE_URL = "http://10.178.240.221:5000/api";
+const HOST = Constants.expoConfig.extra.API_HOST;
+console.log("this the host ip" + HOST)
+export const API_BASE_URL = `http://${HOST}:5000/api`;
