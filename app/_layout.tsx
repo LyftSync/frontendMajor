@@ -5,7 +5,10 @@ import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
 // import 'react-native-reanimated';
 
+import { PaperProvider } from "react-native-paper";
+import { COLORS } from "../constants/colors";
 import { AuthProvider } from "../contexts/AuthContext";
+
 // Assuming SpaceMono is still used by some template files if you keep them.
 // If not, you can remove this font loading or replace with your own.
 // import { useColorScheme } from '@/hooks/useColorScheme'; // From template, remove if not used.
@@ -50,12 +53,29 @@ export default function RootLayout() {
   // Using DefaultTheme, customize if needed or integrate your COLORS constant
   const currentTheme = DefaultTheme; // Replace with DarkTheme based on colorScheme if you implement it
 
+  const paperTheme = {
+    colors: {
+      primary: COLORS.primary,
+      accent: COLORS.secondary,
+      background: COLORS.light,
+      surface: COLORS.white,
+      error: COLORS.danger,
+      text: COLORS.dark,
+      onSurface: COLORS.dark,
+      disabled: COLORS.grey,
+      placeholder: COLORS.grey,
+      backdrop: "rgba(0,0,0,0.5)",
+    },
+  };
+
   return (
-    <AuthProvider>
-      <ThemeProvider value={currentTheme}>
-        <InnerLayout />
-        <StatusBar style="auto" />
-      </ThemeProvider>
-    </AuthProvider>
+    <PaperProvider theme={paperTheme}>
+      <AuthProvider>
+        <ThemeProvider value={currentTheme}>
+          <InnerLayout />
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </AuthProvider>
+    </PaperProvider>
   );
 }

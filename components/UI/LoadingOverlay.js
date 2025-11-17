@@ -1,6 +1,7 @@
-import React from 'react';
-import { View, ActivityIndicator, StyleSheet, Modal, Text } from 'react-native';
-import { COLORS } from '../../constants/colors';
+import React from "react";
+import { Modal, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator } from "react-native-paper";
+import { COLORS } from "../../constants/colors";
 
 const LoadingOverlay = ({ visible, text = "Loading..." }) => {
   if (!visible) return null;
@@ -9,7 +10,11 @@ const LoadingOverlay = ({ visible, text = "Loading..." }) => {
     <Modal transparent={true} animationType="none" visible={visible}>
       <View style={styles.modalBackground}>
         <View style={styles.activityIndicatorWrapper}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
+          <ActivityIndicator
+            size="large"
+            animating={true}
+            color={COLORS.primary}
+          />
           <Text style={styles.loadingText}>{text}</Text>
         </View>
       </View>
@@ -20,26 +25,26 @@ const LoadingOverlay = ({ visible, text = "Loading..." }) => {
 const styles = StyleSheet.create({
   modalBackground: {
     flex: 1,
-    alignItems: 'center',
-    flexDirection: 'column',
-    justifyContent: 'space-around',
-    backgroundColor: '#00000040', // Semi-transparent background
+    alignItems: "center",
+    flexDirection: "column",
+    justifyContent: "space-around",
+    backgroundColor: "#00000040", // Semi-transparent background
   },
   activityIndicatorWrapper: {
     backgroundColor: COLORS.white,
     height: 120,
     width: 120,
     borderRadius: 10,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    paddingVertical: 10
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-around",
+    paddingVertical: 10,
   },
   loadingText: {
     marginTop: 10,
     fontSize: 14,
-    color: COLORS.dark
-  }
+    color: COLORS.dark,
+  },
 });
 
 export default LoadingOverlay;

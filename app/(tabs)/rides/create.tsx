@@ -1,34 +1,42 @@
+import { Ionicons } from "@expo/vector-icons";
+import { Stack, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
   Alert,
-  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
 } from "react-native";
-import { Stack, useRouter } from "expo-router";
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { createRide } from "../../../services/rideService"; 
-import AppTextInput from "../../../components/UI/AppTextInput"; 
-import AppButton from "../../../components/UI/AppButton"; 
-import LoadingOverlay from "../../../components/UI/LoadingOverlay"; 
-import { COLORS } from "../../../constants/colors"; 
-import { getErrorMessage } from "../../../utils/helpers"; 
+import { DatePickerModal, TimePickerModal } from "react-native-paper-dates";
 import MapPickerModal from "../../../components/map/MapPickerModal";
+import AppButton from "../../../components/UI/AppButton";
+import AppTextInput from "../../../components/UI/AppTextInput";
+import LoadingOverlay from "../../../components/UI/LoadingOverlay";
+import { COLORS } from "../../../constants/colors";
 import { DEFAULT_MAP_REGION } from "../../../constants/mapConstants"; // Updated import
+import { createRide } from "../../../services/rideService";
+import { getErrorMessage } from "../../../utils/helpers";
 
 const CreateRideScreen = () => {
   const router = useRouter();
-  const [startLocation, setStartLocation] = useState(null);
-  const [endLocation, setEndLocation] = useState(null);
-  
+  const [startLocation, setStartLocation] = useState<{
+    latitude: number;
+    longitude: number;
+    address: string;
+  } | null>(null);
+  const [endLocation, setEndLocation] = useState<{
+    latitude: number;
+    longitude: number;
+    address: string;
+  } | null>(null);
+
   const [departureTime, setDepartureTime] = useState(
-    new Date(Date.now() + 60 * 60 * 1000), 
+    new Date(Date.now() + 60 * 60 * 1000)
   );
-  const [showPicker, setShowPicker] = useState(false);
-  const [pickerMode, setPickerMode] = useState<'date' | 'time'>('date');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   const [availableSeats, setAvailableSeats] = useState("1");
   const [pricePerSeat, setPricePerSeat] = useState("0");
@@ -36,44 +44,36 @@ const CreateRideScreen = () => {
   const [loading, setLoading] = useState(false);
 
   const [isMapModalVisible, setIsMapModalVisible] = useState(false);
-  const [mapMode, setMapMode] = useState<'start' | 'end' | null>(null);
+  const [mapMode, setMapMode] = useState<"start" | "end" | null>(null);
   const [mapInitialRegion, setMapInitialRegion] = useState(DEFAULT_MAP_REGION);
 
-
-  const onDateTimeChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    setShowPicker(false); 
-    if (event.type === "set" && selectedDate) {
-      const currentSelectedDate = selectedDate;
-      if (pickerMode === 'date') {
-        const newDepartureTime = new Date(departureTime);
-        newDepartureTime.setFullYear(currentSelectedDate.getFullYear());
-        newDepartureTime.setMonth(currentSelectedDate.getMonth());
-        newDepartureTime.setDate(currentSelectedDate.getDate());
-        setDepartureTime(newDepartureTime);
-      } else if (pickerMode === 'time') {
-        const newDepartureTime = new Date(departureTime);
-        newDepartureTime.setHours(currentSelectedDate.getHours());
-        newDepartureTime.setMinutes(currentSelectedDate.getMinutes());
-        newDepartureTime.setSeconds(0); 
-        newDepartureTime.setMilliseconds(0);
-        setDepartureTime(newDepartureTime);
-      }
-    }
-  };
-  
-  const showDatePicker = () => {
-    setPickerMode('date');
-    setShowPicker(true);
+  const handleDateConfirm = (params: { date: Date }) => {
+    const selectedDate = params.date;
+    const newDepartureTime = new Date(departureTime);
+    newDepartureTime.setFullYear(selectedDate.getFullYear());
+    newDepartureTime.setMonth(selectedDate.getMonth());
+    newDepartureTime.setDate(selectedDate.getDate());
+    setDepartureTime(newDepartureTime);
+    setShowDatePicker(false);
   };
 
-  const showTimePicker = () => {
-    setPickerMode('time');
-    setShowPicker(true);
+  const handleTimeConfirm = (params: { hours: number; minutes: number }) => {
+    const { hours, minutes } = params;
+    const newDepartureTime = new Date(departureTime);
+    newDepartureTime.setHours(hours);
+    newDepartureTime.setMinutes(minutes);
+    newDepartureTime.setSeconds(0);
+    newDepartureTime.setMilliseconds(0);
+    setDepartureTime(newDepartureTime);
+    setShowTimePicker(false);
   };
 
-  const openMapPicker = (mode: 'start' | 'end') => {
+  const openDatePicker = () => setShowDatePicker(true);
+  const openTimePicker = () => setShowTimePicker(true);
+
+  const openMapPicker = (mode: "start" | "end") => {
     setMapMode(mode);
-    const currentLocation = mode === 'start' ? startLocation : endLocation;
+    const currentLocation = mode === "start" ? startLocation : endLocation;
     if (currentLocation) {
       setMapInitialRegion({
         latitude: currentLocation.latitude,
@@ -82,15 +82,19 @@ const CreateRideScreen = () => {
         longitudeDelta: 0.01,
       });
     } else {
-      setMapInitialRegion(DEFAULT_MAP_REGION); 
+      setMapInitialRegion(DEFAULT_MAP_REGION);
     }
     setIsMapModalVisible(true);
   };
 
-  const handleLocationSelected = (location: { latitude: number; longitude: number; address: string }) => {
-    if (mapMode === 'start') {
+  const handleLocationSelected = (location: {
+    latitude: number;
+    longitude: number;
+    address: string;
+  }) => {
+    if (mapMode === "start") {
       setStartLocation(location);
-    } else if (mapMode === 'end') {
+    } else if (mapMode === "end") {
       setEndLocation(location);
     }
     setIsMapModalVisible(false);
@@ -98,15 +102,10 @@ const CreateRideScreen = () => {
   };
 
   const handleCreateRide = async () => {
-    if (
-      !startLocation ||
-      !endLocation ||
-      !availableSeats ||
-      !pricePerSeat
-    ) {
+    if (!startLocation || !endLocation || !availableSeats || !pricePerSeat) {
       Alert.alert(
         "Error",
-        "Please select start and end locations, and fill all required fields.",
+        "Please select start and end locations, and fill all required fields."
       );
       return;
     }
@@ -120,10 +119,7 @@ const CreateRideScreen = () => {
       const rideData = {
         startLocation: {
           address: startLocation.address,
-          coordinates: [
-            startLocation.longitude,
-            startLocation.latitude,
-          ],
+          coordinates: [startLocation.longitude, startLocation.latitude],
         },
         endLocation: {
           address: endLocation.address,
@@ -136,7 +132,7 @@ const CreateRideScreen = () => {
       };
       await createRide(rideData);
       Alert.alert("Success", "Ride created successfully!");
-      router.replace("/(tabs)/rides/my-offered"); 
+      router.replace("/(tabs)/rides/my-offered");
     } catch (error) {
       Alert.alert("Creation Failed", getErrorMessage(error));
     } finally {
@@ -149,43 +145,82 @@ const CreateRideScreen = () => {
       <Stack.Screen options={{ title: "Offer a New Ride" }} />
       <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
         <LoadingOverlay visible={loading} />
-        
-        <TouchableOpacity style={styles.locationPickerButton} onPress={() => openMapPicker('start')}>
-          <Text style={styles.locationPickerText} numberOfLines={2} ellipsizeMode="tail">
-            {startLocation ? `Start: ${startLocation.address}` : "Select Start Location on Map"}
+
+        <TouchableOpacity
+          style={styles.locationPickerButton}
+          onPress={() => openMapPicker("start")}
+        >
+          <Text
+            style={styles.locationPickerText}
+            numberOfLines={2}
+            ellipsizeMode="tail"
+          >
+            {startLocation
+              ? `Start: ${startLocation.address}`
+              : "Select Start Location on Map"}
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.locationPickerButton} onPress={() => openMapPicker('end')}>
-          <Text style={styles.locationPickerText} numberOfLines={2} ellipsizeMode="tail">
-            {endLocation ? `End: ${endLocation.address}` : "Select End Location on Map"}
+        <TouchableOpacity
+          style={styles.locationPickerButton}
+          onPress={() => openMapPicker("end")}
+        >
+          <Text
+            style={styles.locationPickerText}
+            numberOfLines={2}
+            ellipsizeMode="tail"
+          >
+            {endLocation
+              ? `End: ${endLocation.address}`
+              : "Select End Location on Map"}
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={showDatePicker} style={styles.datePickerButton}>
-          <Text style={styles.datePickerButtonText}>
-            Departure Date: {departureTime.toLocaleDateString()}
-          </Text>
+        <TouchableOpacity
+          onPress={openDatePicker}
+          style={styles.datePickerButton}
+        >
+          <View style={styles.pickerRow}>
+            <Ionicons name="calendar" size={20} color={COLORS.primary} />
+            <Text style={styles.datePickerButtonText}>
+              Departure Date: {departureTime.toLocaleDateString()}
+            </Text>
+          </View>
         </TouchableOpacity>
-        <TouchableOpacity onPress={showTimePicker} style={styles.datePickerButton}>
-          <Text style={styles.datePickerButtonText}>
-            Departure Time: {departureTime.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: false
-            })}
-          </Text>
+        <TouchableOpacity
+          onPress={openTimePicker}
+          style={styles.datePickerButton}
+        >
+          <View style={styles.pickerRow}>
+            <Ionicons name="time" size={20} color={COLORS.primary} />
+            <Text style={styles.datePickerButtonText}>
+              Departure Time:{" "}
+              {departureTime.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              })}
+            </Text>
+          </View>
         </TouchableOpacity>
-        
-        {showPicker && (
-          <DateTimePicker
-            testID="dateTimePicker"
-            value={departureTime}
-            mode={pickerMode}
-            is24Hour={true}
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={onDateTimeChange}
-            minimumDate={new Date()} 
+
+        {showDatePicker && (
+          <DatePickerModal
+            locale="en"
+            mode="single"
+            visible={showDatePicker}
+            onDismiss={() => setShowDatePicker(false)}
+            date={departureTime}
+            onConfirm={handleDateConfirm as any}
+          />
+        )}
+
+        {showTimePicker && (
+          <TimePickerModal
+            locale="en"
+            visible={showTimePicker}
+            onDismiss={() => setShowTimePicker(false)}
+            onConfirm={handleTimeConfirm}
           />
         )}
 
@@ -194,24 +229,30 @@ const CreateRideScreen = () => {
           value={availableSeats}
           onChangeText={setAvailableSeats}
           keyboardType="number-pad"
+          error=""
         />
         <AppTextInput
           label="Price Per Seat (INR)"
           value={pricePerSeat}
           onChangeText={setPricePerSeat}
-          keyboardType="number-pad"
+          keyboardType="numeric"
+          error=""
         />
         <AppTextInput
-          label="Notes (optional)"
+          label="Notes (Optional)"
           value={notes}
           onChangeText={setNotes}
           multiline
-          placeholder="e.g., Cash only, no pets"
+          placeholder="Any additional notes..."
+          error=""
         />
         <AppButton
           title="Create Ride"
           onPress={handleCreateRide}
           loading={loading}
+          style={{}}
+          textStyle={{}}
+          disabled={false}
         />
         <View style={{ height: 50 }} />
       </ScrollView>
@@ -241,23 +282,33 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginVertical: 10,
     minHeight: 50, // Ensure enough height for text
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   locationPickerText: {
     color: COLORS.primary,
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   datePickerButton: {
-    backgroundColor: COLORS.secondary,
-    padding: 15,
+    borderWidth: 1,
+    borderColor: COLORS.grey,
     borderRadius: 5,
-    alignItems: "center",
+    padding: 10,
+    fontSize: 16,
+    backgroundColor: COLORS.white,
     marginVertical: 5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pickerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
   },
   datePickerButtonText: {
-    color: COLORS.white,
+    color: COLORS.dark,
     fontSize: 16,
+    marginLeft: 10,
   },
 });
 
