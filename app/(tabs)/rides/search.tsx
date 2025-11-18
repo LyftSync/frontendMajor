@@ -52,15 +52,17 @@ const SearchRidesScreen = () => {
     address: string;
   } | null>(null);
 
+  // Kept for direct input/display, but map picker will be primary
+  const [fromLatText, setFromLatText] = useState("");
+  const [fromLngText, setFromLngText] = useState("");
+
   const [toLocation, setToLocation] = useState<{
     latitude: number;
     longitude: number;
     address: string;
   } | null>(null);
-
-  // Kept for direct input/display, but map picker will be primary
-  const [fromLatText, setFromLatText] = useState("");
-  const [fromLngText, setFromLngText] = useState("");
+  const [toLatText, setToLatText] = useState("");
+  const [toLngText, setToLngText] = useState("");
 
   const [departureAfter, setDepartureAfter] = useState(new Date());
   const [seats, setSeats] = useState("1");
@@ -70,10 +72,8 @@ const SearchRidesScreen = () => {
 
   const [isMapModalVisible, setIsMapModalVisible] = useState(false);
   const [mapInitialRegion, setMapInitialRegion] = useState(DEFAULT_MAP_REGION);
-  const [isToMapModalVisible, setIsToMapModalVisible] = useState(false);
-  const [toMapInitialRegion, setToMapInitialRegion] =
-    useState(DEFAULT_MAP_REGION);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [mapMode, setMapMode] = useState<"from" | "to" | null>(null);
 
   const handleDateConfirm = (params: { date: Date }) => {
     setDepartureAfter(params.date);
@@ -172,60 +172,49 @@ const SearchRidesScreen = () => {
     } else {
       setMapInitialRegion(DEFAULT_MAP_REGION);
     }
+    setMapMode("from");
     setIsMapModalVisible(true);
   };
 
   const openMapPickerForToLocation = () => {
     if (toLocation) {
-      setToMapInitialRegion({
+      setMapInitialRegion({
         latitude: toLocation.latitude,
         longitude: toLocation.longitude,
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
       });
     } else {
-      setToMapInitialRegion(DEFAULT_MAP_REGION);
+      setMapInitialRegion(DEFAULT_MAP_REGION);
     }
-    setIsToMapModalVisible(true);
-  };
-
-  const openFromMapPicker = () => {
-    setMapInitialRegion(
-      fromLocation
-        ? {
-            latitude: fromLocation.latitude,
-            longitude: fromLocation.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          }
-        : DEFAULT_MAP_REGION
-    );
+    setMapMode("to");
     setIsMapModalVisible(true);
   };
 
-  const openToMapPicker = () => {
-    setToMapInitialRegion(
-      toLocation
-        ? {
-            latitude: toLocation.latitude,
-            longitude: toLocation.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          }
-        : DEFAULT_MAP_REGION
-    );
-    setIsToMapModalVisible(true);
+  const openMapPicker = (mode: "from" | "to") => {
+    setMapMode(mode);
+    const location = mode === "from" ? fromLocation : toLocation;
+    if (location) {
+      setMapInitialRegion({
+        latitude: location.latitude,
+        longitude: location.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      });
+    } else {
+      setMapInitialRegion(DEFAULT_MAP_REGION);
+    }
+    setIsMapModalVisible(true);
   };
 
-  const handleLocationSelected = (location: {
-    latitude: number;
-    longitude: number;
-    address: string;
-  }) => {
-    setFromLocation(location); // This will trigger the useEffect to update fromLatText and fromLngText
+  const handleLocationSelected = (location: { latitude: number; longitude: number; address: string }) => {
+    if (mapMode === 'from') {
+      setFromLocation(location);
+    } else if (mapMode === 'to') {
+      setToLocation(location);
+    }
     setIsMapModalVisible(false);
-    // Optionally trigger search immediately after location selection
-    // handleSearch();
+    setMapMode(null);
   };
 
   const handleToLocationSelected = (location: {
@@ -234,7 +223,7 @@ const SearchRidesScreen = () => {
     address: string;
   }) => {
     setToLocation(location);
-    setIsToMapModalVisible(false);
+    setIsMapModalVisible(false);
   };
 
   const handleFromLocationSelected = (location: {
@@ -254,32 +243,22 @@ const SearchRidesScreen = () => {
           <Text style={styles.formTitle}>Search Criteria</Text>
 
           <TouchableOpacity
-            style={styles.locationPickerButton}
-            onPress={openMapPickerForFromLocation}
+            style={styles.locationButton}
+            onPress={() => openMapPicker("from")}
           >
-            <Text
-              style={styles.locationPickerText}
-              numberOfLines={2}
-              ellipsizeMode="tail"
-            >
-              {fromLocation
-                ? `From: ${fromLocation.address}`
-                : "Select Start Location on Map"}
+            <Ionicons name="location-outline" size={20} color={COLORS.primary} />
+            <Text style={styles.locationText}>
+              {fromLocation ? fromLocation.address : "Select From Location"}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.locationPickerButton}
-            onPress={openMapPickerForToLocation}
+            style={styles.locationButton}
+            onPress={() => openMapPicker("to")}
           >
-            <Text
-              style={styles.locationPickerText}
-              numberOfLines={2}
-              ellipsizeMode="tail"
-            >
-              {toLocation
-                ? `To: ${toLocation.address}`
-                : "Select Destination on Map"}
+            <Ionicons name="location-outline" size={20} color={COLORS.primary} />
+            <Text style={styles.locationText}>
+              {toLocation ? toLocation.address : "Select To Location"}
             </Text>
           </TouchableOpacity>
 
@@ -353,7 +332,8 @@ const SearchRidesScreen = () => {
               item={item}
               onPress={() => router.push(`/(tabs)/rides/${item._id}`)}
             />
-          )}
+          )
+          }
           contentContainerStyle={styles.list}
         />
 
@@ -373,13 +353,6 @@ const SearchRidesScreen = () => {
         onClose={() => setIsMapModalVisible(false)}
         onLocationSelect={handleLocationSelected}
         initialRegion={mapInitialRegion}
-      />
-
-      <MapPickerModal
-        isVisible={isToMapModalVisible}
-        onClose={() => setIsToMapModalVisible(false)}
-        onLocationSelect={handleToLocationSelected}
-        initialRegion={toMapInitialRegion}
       />
     </>
   );
@@ -402,7 +375,7 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     marginBottom: 10,
   },
-  locationPickerButton: {
+  locationButton: {
     backgroundColor: COLORS.white,
     paddingVertical: 12,
     paddingHorizontal: 15,
@@ -413,11 +386,13 @@ const styles = StyleSheet.create({
     marginVertical: 8, // Adjusted margin
     minHeight: 45, // Ensure enough height
     justifyContent: "center",
+    flexDirection: "row",
   },
-  locationPickerText: {
+  locationText: {
     color: COLORS.primary,
     fontSize: 15, // Adjusted font size
     textAlign: "center",
+    marginLeft: 10,
   },
   list: {
     paddingHorizontal: 15,
