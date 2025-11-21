@@ -16,7 +16,7 @@ export default () => {
 			slug: "lyftsync",
 			version: "1.0.0",
 			orientation: "portrait",
-			icon: "./assets/images/icon.png",
+			icon: "./assets/images/circlelogo.png",
 			scheme: "lyftsync",
 			userInterfaceStyle: "automatic",
 			newArchEnabled: true,
